@@ -12,7 +12,7 @@ import (
 var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
 
 func homepage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Super Secret")
+	fmt.Fprint(w, "Super Secret", mySigningKey)
 }
 
 func isAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {
@@ -32,7 +32,7 @@ func isAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handle
 				iss := "jwtgo.io"
 				checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 				if !checkIss {
-					return nil, fmt.Errorf("Invalid aud")
+					return nil, fmt.Errorf("Invalid Iss")
 				}
 
 				return mySigningKey, nil
