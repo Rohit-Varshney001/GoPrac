@@ -1,6 +1,8 @@
 {
+
     "Token":"YOUR KEY",
     "BotPrefix":"!",
     "OpenAiKey":"YOUR KEY"
+
 
 }
