@@ -7,15 +7,17 @@ import (
 )
 
 var (
-	Token     string
-	BotPrefix string
+	Token        string
+	BotPrefix    string
+	OpenAIAPIKey string
 
 	config *configStruct
 )
 
 type configStruct struct {
-	Token     string `json:"Token"`
-	BotPrefix string `json:"BotPrefix"`
+	Token        string `json:"Token"`
+	BotPrefix    string `json:"BotPrefix"`
+	OpenAIAPIKey string `json:"OpenAiKey"`
 }
 
 func ReadConfig() error {
@@ -39,6 +41,7 @@ func ReadConfig() error {
 
 	Token = config.Token
 	BotPrefix = config.BotPrefix
+	OpenAIAPIKey = config.OpenAIAPIKey
 
 	return nil
 

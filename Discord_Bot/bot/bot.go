@@ -1,11 +1,12 @@
 package bot
 
 import (
+	"context"
 	"fmt"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/rohitvarshney/GoPrac/discord_bot/config"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 var BotId string
@@ -22,7 +23,7 @@ func Start() {
 	user, err := goBot.User("@me")
 
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("here" + err.Error())
 		return
 	}
 
@@ -46,34 +47,41 @@ func messegeHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	content := strings.ToLower(m.Content)
-
-	switch content {
-	case "ping":
+	if m.Content == "ping" {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "pong")
-	case "hello":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Hi there! 🙋")
-	case "hii":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Hi there! 🙋")
-	case "what's up":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Not much, just chilling. How about you? 😊")
-	case "tell me a joke.":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Why don't scientists trust atoms? Because they make up everything! 😄")
-	case "can you recommend a movie":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Sure! How about watching 'Inception'? It's a mind-bending thriller. 😁")
-	case "how is the weather today":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "The weather today is sunny with a few clouds. Perfect for a stroll outside! 🫠")
-	case "thanks":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "You're welcome! 🤝")
-	case "bye":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Goodbye! Have a great day! 👌")
-	case "help":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Kya hua bsdk.? 🙋")
-	case "what is your purpose?":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "I'm here to assist you with whatever you need! 🙂")
-
-	default:
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Bhen ke laude bakchodi mat kar tameez ke question pooch.! 🖕")
+		return
+	} else {
+		response, err := getAIResponse(m.Content)
+		if err != nil {
+			fmt.Println(err.Error())
+			_, _ = s.ChannelMessageSend(m.ChannelID, "Sorry, I couldn't generate a response at the moment.")
+			return
+		}
+		_, _ = s.ChannelMessageSend(m.ChannelID, response)
+		return
 	}
 
+}
+
+func getAIResponse(message string) (string, error) {
+	client := openai.NewClient(config.OpenAIAPIKey)
+
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: message,
+				},
+			},
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+
+	res := resp.Choices[0].Message.Content
+	return res, nil
 }
